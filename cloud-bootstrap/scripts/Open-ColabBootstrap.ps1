@@ -2,7 +2,9 @@
 param(
     [bool]$DryRun = $true,
 
-    [switch]$Commit
+    [switch]$Commit,
+
+    [string]$ProfileDirectory = 'Profile 6'
 )
 
 if ($Commit) {
@@ -22,5 +24,11 @@ if (-not $chrome) {
 }
 
 Invoke-CloudBootstrapAction -DryRun $DryRun -Description "Open Colab bootstrap in Chrome: $url" -Action {
-    Start-Process -FilePath $chrome -ArgumentList $url
+    Start-Process -FilePath $chrome -ArgumentList @(
+        "--profile-directory=$ProfileDirectory",
+        '--new-window',
+        '--disable-session-crashed-bubble',
+        '--hide-crash-restore-bubble',
+        $url
+    )
 }
