@@ -165,10 +165,10 @@ function Set-CloudBootstrapRegistryValue {
     Invoke-CloudBootstrapAction -DryRun $DryRun -Description "Set registry $Path -> $Name = $Value" -Action {
         try {
             if (-not (Test-Path -LiteralPath $Path)) {
-                New-Item -Path $Path -Force | Out-Null
+                New-Item -Path $Path -Force -ErrorAction Stop | Out-Null
             }
 
-            New-ItemProperty -Path $Path -Name $Name -Value $Value -PropertyType $Type -Force | Out-Null
+            New-ItemProperty -Path $Path -Name $Name -Value $Value -PropertyType $Type -Force -ErrorAction Stop | Out-Null
         } catch {
             $warnMessage = "Registry write skipped for {0} -> {1}: {2}" -f $Path, $Name, $_.Exception.Message
             Write-CloudBootstrapLog -Level Warn -Message $warnMessage

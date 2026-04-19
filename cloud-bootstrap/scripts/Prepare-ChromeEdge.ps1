@@ -31,6 +31,12 @@ if ($ApplyEdgePolicies) {
     Set-CloudBootstrapRegistryValue -DryRun $DryRun -Path $edgePolicyPath -Name 'HideFirstRunExperience' -Value 1
     Set-CloudBootstrapRegistryValue -DryRun $DryRun -Path $edgePolicyPath -Name 'MetricsReportingEnabled' -Value 0
 
+    $explorerPolicyPath = 'HKCU:\Software\Microsoft\Windows\CurrentVersion\Policies\Explorer'
+    $disallowRunPath = Join-Path $explorerPolicyPath 'DisallowRun'
+    Set-CloudBootstrapRegistryValue -DryRun $DryRun -Path $explorerPolicyPath -Name 'DisallowRun' -Value 1
+    Set-CloudBootstrapRegistryValue -DryRun $DryRun -Path $disallowRunPath -Name '1' -Value 'msedge.exe' -Type ([Microsoft.Win32.RegistryValueKind]::String)
+    Set-CloudBootstrapRegistryValue -DryRun $DryRun -Path $disallowRunPath -Name '2' -Value 'msedge_proxy.exe' -Type ([Microsoft.Win32.RegistryValueKind]::String)
+
     if (-not $DryRun) {
         Get-Process msedge -ErrorAction SilentlyContinue | Stop-Process -Force -ErrorAction SilentlyContinue
     }
