@@ -19,7 +19,11 @@ PowerShell-first scaffold for moving local work toward cloud storage and remote 
 - `scripts/Invoke-CloudRemote.ps1` - generic wrapper for remote command planning and execution.
 - `scripts/Invoke-FastRelief.ps1` - apply immediate low-risk relief: npm cache cleanup, Edge policy containment, and OneDrive online-only conversion for selected paths.
 - `scripts/Invoke-GcpAlwaysFreeVm.ps1` - create a safe Always Free candidate VM on Google Cloud once billing is active.
+- `scripts/Open-CloudWorkspace.ps1` - open Colab, Drive, and GitHub together in a selected Chrome profile.
+- `scripts/Open-CloudWorkspace-2811.ps1` - open the shared cloud workspace in `Profile 6`, intended for `israel.realivazquez2811@gmail.com`.
+- `scripts/Open-CloudWorkspace-Gmail.ps1` - open the shared cloud workspace in `Default`, intended for `israel.realivazquez@gmail.com`.
 - `scripts/Open-ColabBootstrap.ps1` - open the Colab VM bootstrap notebook in Chrome.
+- `scripts/Open-ColabBootstrap-Gmail.ps1` - open the same Colab bootstrap notebook using Chrome `Default`, useful for the `israel.realivazquez@gmail.com` account.
 
 ## Safety Model
 
@@ -36,7 +40,10 @@ pwsh .\cloud-bootstrap\scripts\Prepare-ChromeEdge.ps1 -ApplyEdgePolicies
 pwsh .\cloud-bootstrap\scripts\Invoke-DriveOffload.ps1 -SourcePath "$env:USERPROFILE\Downloads" -Mode Copy
 pwsh .\cloud-bootstrap\scripts\Invoke-FastRelief.ps1
 pwsh .\cloud-bootstrap\scripts\Invoke-GcpAlwaysFreeVm.ps1 -OpenBillingIfDisabled
+pwsh .\cloud-bootstrap\scripts\Open-CloudWorkspace-2811.ps1
+pwsh .\cloud-bootstrap\scripts\Open-CloudWorkspace-Gmail.ps1
 pwsh .\cloud-bootstrap\scripts\Open-ColabBootstrap.ps1
+pwsh .\cloud-bootstrap\scripts\Open-ColabBootstrap-Gmail.ps1
 pwsh .\cloud-bootstrap\scripts\Invoke-CloudRemote.ps1 -Transport Ssh -HostName cloud-host.example.com -Command 'whoami'
 ```
 
@@ -51,7 +58,16 @@ pwsh .\cloud-bootstrap\scripts\Invoke-CloudRemote.ps1 -Transport Ssh -HostName c
 
 - The notebook is designed to run in Google Colab with Drive mounted at `/content/drive`.
 - It clones or updates this GitHub repository inside the Colab VM so heavy work can run remotely.
+- It now scans the mounted Drive for `Antigravity_Cloud_Migration` and the known offload folders, so it tolerates different Google accounts and slightly different Drive layouts.
+- Use `Open-ColabBootstrap.ps1` for the `Profile 6` flow tied to `israel.realivazquez2811@gmail.com`.
+- Use `Open-ColabBootstrap-Gmail.ps1` for the `Default` Chrome profile tied to `israel.realivazquez@gmail.com`.
 - Use it for batch transforms, audits, notebook-style analysis, or any task that should not consume local RAM/CPU.
+
+## Account Split
+
+- `Default` is the lighter `gmail.com` Google account lane for Colab and Drive browsing.
+- `Profile 6` is the `2811@gmail.com` lane already tied to the stronger infra side such as `gcloud`.
+- The workspace launchers open the same repo and notebook in both profiles, so each account can keep its own session state while sharing the same GitHub bootstrap source.
 
 ## GCP Always Free
 
