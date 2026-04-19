@@ -12,11 +12,13 @@ PowerShell-first scaffold for moving local work toward cloud storage and remote 
 ## Layout
 
 - `lib/CloudBootstrap.psm1` - shared helpers for logging, dry-run handling, inventory, and path safety.
+- `colab/pc_offload_colab_bootstrap.ipynb` - Colab VM bootstrap notebook for Drive-backed remote execution.
 - `scripts/Invoke-CloudAudit.ps1` - scan local paths and report offload candidates.
 - `scripts/Prepare-ChromeEdge.ps1` - inspect browser presence and print setup guidance.
 - `scripts/Invoke-DriveOffload.ps1` - plan or perform a staged copy workflow for Google Drive.
 - `scripts/Invoke-CloudRemote.ps1` - generic wrapper for remote command planning and execution.
 - `scripts/Invoke-FastRelief.ps1` - apply immediate low-risk relief: npm cache cleanup, Edge policy containment, and OneDrive online-only conversion for selected paths.
+- `scripts/Open-ColabBootstrap.ps1` - open the Colab VM bootstrap notebook in Chrome.
 
 ## Safety Model
 
@@ -32,6 +34,7 @@ pwsh .\cloud-bootstrap\scripts\Invoke-CloudAudit.ps1
 pwsh .\cloud-bootstrap\scripts\Prepare-ChromeEdge.ps1 -ApplyEdgePolicies
 pwsh .\cloud-bootstrap\scripts\Invoke-DriveOffload.ps1 -SourcePath "$env:USERPROFILE\Downloads" -Mode Copy
 pwsh .\cloud-bootstrap\scripts\Invoke-FastRelief.ps1
+pwsh .\cloud-bootstrap\scripts\Open-ColabBootstrap.ps1
 pwsh .\cloud-bootstrap\scripts\Invoke-CloudRemote.ps1 -Transport Ssh -HostName cloud-host.example.com -Command 'whoami'
 ```
 
@@ -41,3 +44,9 @@ pwsh .\cloud-bootstrap\scripts\Invoke-CloudRemote.ps1 -Transport Ssh -HostName c
 - The first implementation favors observability and safe planning over automation breadth.
 - The default Google Drive roots already include the real paths discovered on this machine such as `G:\Mi unidad`, `C:\Users\Lenovo\Streaming de Google Drive\Mi unidad`, and `C:\Users\Lenovo\GoogleDrive_ProjectSpace`.
 - Add concrete cloud endpoints, folder mappings, and offload rules as the workflow becomes clearer.
+
+## Colab VM
+
+- The notebook is designed to run in Google Colab with Drive mounted at `/content/drive`.
+- It clones or updates this GitHub repository inside the Colab VM so heavy work can run remotely.
+- Use it for batch transforms, audits, notebook-style analysis, or any task that should not consume local RAM/CPU.
