@@ -55,7 +55,17 @@ if (Get-Command hf -ErrorAction SilentlyContinue) {
     $rows.Add((New-StatusRow -Provider 'Hugging Face' -Status 'hf CLI missing; MCP lane is available in Codex' -Use 'Jobs through MCP, no local RAM used.' -NextStep 'Install hf CLI only if local Hub file operations are needed.'))
 }
 
-if (Get-Command wrangler -ErrorAction SilentlyContinue) {
+$cloudflareScript = Join-Path $PSScriptRoot 'Invoke-CloudflareOffload.ps1'
+if (Test-Path -LiteralPath $cloudflareScript) {
+    $cloudflareStatus = (& $cloudflareScript 2>&1) -join ' '
+    if ($cloudflareStatus -match 'r2_list\s+ok|workers_list\s+ok') {
+        $rows.Add((New-StatusRow -Provider 'Cloudflare' -Status 'authenticated for offload checks' -Use 'R2 for object offload and Workers for lightweight orchestration.' -NextStep 'Run Invoke-CloudflareOffload.ps1 -CreateBucket -Commit after confirming token scope.'))
+    } elseif ($cloudflareStatus -match 'api_token\s+missing') {
+        $rows.Add((New-StatusRow -Provider 'Cloudflare' -Status 'token missing in shell' -Use 'R2/Workers once CLOUDFLARE_API_TOKEN is set.' -NextStep 'Create a scoped token with R2 Storage Edit and Workers Scripts Edit.'))
+    } else {
+        $rows.Add((New-StatusRow -Provider 'Cloudflare' -Status 'needs token scope repair' -Use 'R2/Workers after API token scope is fixed.' -NextStep $cloudflareStatus))
+    }
+} elseif (Get-Command wrangler -ErrorAction SilentlyContinue) {
     $wranglerStatus = (& wrangler whoami 2>&1) -join ' '
     $rows.Add((New-StatusRow -Provider 'Cloudflare' -Status $wranglerStatus -Use 'Workers/R2 for lightweight orchestration and object storage.' -NextStep 'Use R2/Workers after API auth is repaired.'))
 } else {
@@ -77,8 +87,7 @@ if (Test-Path -LiteralPath $ociScript) {
             & $ociScript -DryRun:$DryRun -Commit:$Commit
             $rows.Add((New-StatusRow -Provider 'Oracle OCI' -Status 'retry attempted' -Use 'Persistent Always Free A1 VM when host capacity is available.' -NextStep 'If capacity is exhausted, heartbeat retries later.'))
         } else {
-            & $ociScript
-            $rows.Add((New-StatusRow -Provider 'Oracle OCI' -Status 'verified' -Use 'Persistent Always Free A1 VM when host capacity is available.' -NextStep 'Run this hub with -RetryOracle -Commit to attempt launch.'))
+            $rows.Add((New-StatusRow -Provider 'Oracle OCI' -Status 'configured; retry skipped' -Use 'Persistent Always Free A1 VM when host capacity is available.' -NextStep 'Run this hub with -RetryOracle -Commit to attempt launch.'))
         }
     } catch {
         $message = $_.Exception.Message
