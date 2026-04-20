@@ -17,6 +17,8 @@ PowerShell-first scaffold for moving local work toward cloud storage and remote 
 - `scripts/Prepare-ChromeEdge.ps1` - inspect browser presence and print setup guidance.
 - `scripts/Invoke-DriveOffload.ps1` - plan or perform a staged copy workflow for Google Drive.
 - `scripts/Invoke-CloudRemote.ps1` - generic wrapper for remote command planning and execution.
+- `scripts/Invoke-CloudOffloadHub.ps1` - single status hub for GitHub, Hugging Face, Cloudflare, GCP, and OCI offload lanes.
+- `scripts/Invoke-OciA1OffloadVm.ps1` - idempotent Oracle Always Free A1 Flex VM launcher with safe defaults.
 - `scripts/Invoke-FastRelief.ps1` - apply immediate low-risk relief: npm cache cleanup, Edge policy containment, and OneDrive online-only conversion for selected paths.
 - `scripts/Invoke-GcpAlwaysFreeVm.ps1` - create a safe Always Free candidate VM on Google Cloud once billing is active.
 - `scripts/Invoke-PerformanceMode.ps1` - stop extra browser/sync load, clean temp files, run fast relief, and reopen only a minimal Colab lane.
@@ -42,6 +44,9 @@ pwsh .\cloud-bootstrap\scripts\Invoke-DriveOffload.ps1 -SourcePath "$env:USERPRO
 pwsh .\cloud-bootstrap\scripts\Invoke-FastRelief.ps1
 pwsh .\cloud-bootstrap\scripts\Invoke-PerformanceMode.ps1 -Commit
 pwsh .\cloud-bootstrap\scripts\Invoke-PerformanceMode.ps1 -Commit -OpenColab
+pwsh .\cloud-bootstrap\scripts\Invoke-CloudOffloadHub.ps1
+pwsh .\cloud-bootstrap\scripts\Invoke-CloudOffloadHub.ps1 -RetryOracle -Commit
+pwsh .\cloud-bootstrap\scripts\Invoke-OciA1OffloadVm.ps1 -Commit
 pwsh .\cloud-bootstrap\scripts\Invoke-GcpAlwaysFreeVm.ps1 -OpenBillingIfDisabled
 pwsh .\cloud-bootstrap\scripts\Open-CloudWorkspace-2811.ps1
 pwsh .\cloud-bootstrap\scripts\Open-CloudWorkspace-Gmail.ps1
@@ -88,6 +93,27 @@ pwsh .\cloud-bootstrap\scripts\Invoke-CloudRemote.ps1 -Transport Ssh -HostName c
 
 ## Oracle CLI
 
-- OCI CLI is installed locally, but it is only usable after `C:\Users\Lenovo\.oci\config` exists and `oci session validate --profile DEFAULT --config-file "$env:USERPROFILE\.oci\config"` succeeds.
-- Browser login alone is not enough; the local CLI auth callback must save the generated profile and session files.
-- The current auth lane should use Chrome `Profile 6`, `israel.realivazquez2811@gmail.com`, and region `mx-monterrey-1` when the tenancy home region is `MTY`.
+- OCI CLI is installed and the `DEFAULT` profile is intended for `israel.realivazquez2811@gmail.com`.
+- The current home region is `mx-monterrey-1` / `MTY`.
+- `Invoke-OciA1OffloadVm.ps1` uses only `VM.Standard.A1.Flex` with `1 OCPU`, `6 GB RAM`, and a `50 GB` boot volume by default.
+- If Oracle returns `Out of host capacity` or `TooManyRequests`, wait and retry later. Do not switch this workflow to paid shapes just to make it succeed faster.
+- The script is idempotent: it reuses existing `pc-offload-*` network resources and avoids duplicate instances.
+
+## GitHub Actions Offload
+
+- `.github/workflows/cloud-offload-dispatch.yml` can be started manually from GitHub Actions.
+- `powershell-smoke` runs parser/smoke checks on GitHub-hosted Windows instead of using local CPU/RAM.
+- `repo-inventory` generates a repository file inventory artifact in GitHub-hosted compute.
+- This is best for repo-centric tasks. It cannot see personal local files unless they are already committed, uploaded, or synced to a cloud source.
+
+## Hugging Face Jobs
+
+- The Hugging Face MCP is authenticated as `israelrealivazquez2811`.
+- Use Hugging Face Jobs for CPU/GPU batch workloads when the account plan/quota allows it.
+- Jobs should be submitted through the Hugging Face MCP Jobs tool so tokens stay in plugin-managed secrets instead of local scripts.
+
+## Cloudflare
+
+- Cloudflare is the right future lane for lightweight orchestration, Workers, and R2 object storage.
+- Current API calls returned an authentication error, so do not rely on Cloudflare until the API token or plugin auth is repaired.
+- Once Cloudflare auth works, prefer R2 for object-style offload and Workers for small coordination endpoints, not heavy VM-style compute.
