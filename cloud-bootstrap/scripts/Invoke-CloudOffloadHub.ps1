@@ -52,7 +52,7 @@ if (Get-Command hf -ErrorAction SilentlyContinue) {
     $hfStatus = (& hf auth whoami 2>&1) -join ' '
     $rows.Add((New-StatusRow -Provider 'Hugging Face' -Status $hfStatus -Use 'Jobs for CPU/GPU batch work when plan/quota allows.' -NextStep 'Use the Hugging Face MCP Jobs tool for actual submissions.'))
 } else {
-    $rows.Add((New-StatusRow -Provider 'Hugging Face' -Status 'MCP authenticated, CLI missing locally' -Use 'Jobs through MCP, no local RAM used.' -NextStep 'Install hf CLI only if local Hub file operations are needed.'))
+    $rows.Add((New-StatusRow -Provider 'Hugging Face' -Status 'hf CLI missing; MCP lane is available in Codex' -Use 'Jobs through MCP, no local RAM used.' -NextStep 'Install hf CLI only if local Hub file operations are needed.'))
 }
 
 if (Get-Command wrangler -ErrorAction SilentlyContinue) {
@@ -95,3 +95,6 @@ if (Test-Path -LiteralPath $ociScript) {
 $rows | Format-Table -AutoSize
 
 Write-CloudBootstrapLog -Level Info -Message 'Recommended lane order: Google Drive/Colab for file-backed batches, GitHub Actions for repo tasks, Oracle/GCP for persistent VM, Hugging Face Jobs for paid CPU/GPU batches, Cloudflare after auth repair.'
+
+# This hub is a readiness report. Missing optional CLIs should not make CI fail.
+$global:LASTEXITCODE = 0
